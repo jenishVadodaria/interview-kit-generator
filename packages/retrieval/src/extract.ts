@@ -16,10 +16,7 @@ export interface ExtractedPage {
 export function extractContent(html: string, baseUrl: string): ExtractedPage {
   const $ = cheerio.load(html);
 
-  // Remove useless elements before extracting text
-  $('script, style, noscript, nav, footer, header, iframe, svg, img, form, button').remove();
-
-  // Extract links specifically from body
+  // Extract links specifically from body before removing nav/header
   const links: ExtractedLink[] = [];
   $('body a').each((_, el) => {
     const a = $(el);
@@ -34,6 +31,10 @@ export function extractContent(html: string, baseUrl: string): ExtractedPage {
       }
     }
   });
+
+  // Remove useless elements before extracting text
+  $('script, style, noscript, nav, footer, header, iframe, svg, img, form, button').remove();
+
 
   // Use Readability for high-quality text extraction
   const dom = new JSDOM(html, { url: baseUrl });

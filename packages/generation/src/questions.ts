@@ -42,7 +42,8 @@ Respond with JSON only.`;
 export async function generateQuestions(
   requirements: Requirement[], 
   category: Category, 
-  briefSummary?: string
+  briefSummary?: string,
+  discussions?: { title: string; content: string }[]
 ): Promise<Omit<Question, 'id'>[]> {
   // If system_design but no architecture requirements, we might want to skip, but this is handled by caller.
   if (requirements.length === 0) return [];
@@ -50,7 +51,12 @@ export async function generateQuestions(
   const systemPrompt = createSystemPrompt(category, briefSummary);
   
   const reqsText = requirements.map(r => `[ID: ${r.id}] ${r.kind} - ${r.priority} - ${r.text}`).join('\n');
-  const userPrompt = `Generate ${category} questions that evaluate the following requirements:\n\n${reqsText}`;
+  let userPrompt = `Generate ${category} questions that evaluate the following requirements:\n\n${reqsText}`;
+  
+  if (discussions && discussions.length > 0) {
+    userPrompt += `\n\nAdditionally, here are some real interview discussions you can use for inspiration:\n`;
+    userPrompt += discussions.map(d => `Title: ${d.title}\nContent: ${d.content}`).join('\n\n');
+  }
 
   const result = await callLLM(systemPrompt, userPrompt, QuestionsExtractionSchema);
   return result.questions;
@@ -59,14 +65,15 @@ export async function generateQuestions(
 export async function generateAllQuestions(
   requirements: Requirement[],
   briefSummary?: string,
-  isJunior: boolean = false
+  isJunior: boolean = false,
+  discussions?: { title: string; content: string }[]
 ): Promise<Question[]> {
   const categories: Category[] = ['technical', 'behavioural', 'company_fit'];
   if (!isJunior) {
     categories.push('system_design');
   }
 
-  const allQuestionsPromises = categories.map(cat => generateQuestions(requirements, cat, briefSummary));
+  const allQuestionsPromises = categories.map(cat => generateQuestions(requirements, cat, briefSummary, discussions));
   const results = await Promise.all(allQuestionsPromises);
   
   const allQuestions = results.flat();

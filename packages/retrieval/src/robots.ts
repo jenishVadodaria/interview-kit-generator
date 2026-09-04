@@ -6,6 +6,10 @@ export async function checkRobotsTxt(baseUrl: string, path: string): Promise<boo
   const robotsUrl = new URL('/robots.txt', baseUrl).toString();
   
   if (!robotsCache.has(baseUrl)) {
+    if (robotsCache.size > 100) {
+      robotsCache.clear();
+    }
+    
     try {
       const response = await fetch(robotsUrl, { 
         headers: { 'User-Agent': 'InterviewPrepBot/1.0' } 

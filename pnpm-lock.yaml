@@ -250,7 +250,7 @@ importers:
         specifier: workspace:*
         version: link:../shared
       mongoose:
-        specifier: ^8.0.0
+        specifier: ^8.24.4
         version: 8.24.4
     devDependencies:
       '@types/node':
@@ -284,6 +284,9 @@ importers:
         specifier: workspace:*
         version: link:../shared
     devDependencies:
+      '@types/express':
+        specifier: ^4.17.25
+        version: 4.17.25
       typescript:
         specifier: ^5.4.0
         version: 5.9.3

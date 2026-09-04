@@ -60,13 +60,12 @@ export function buildSchedule(
     dayIndex = (dayIndex + 1) % daysAvailable;
   }
 
-  // 4. Distribute flashcards (evenly across the first half of the schedule)
-  // Or just evenly across all days.
+  // 4. Distribute flashcards evenly across all days
   let flashcardIndex = 0;
   for (const f of flashcards) {
     const day = schedule[flashcardIndex]!;
     day.flashcard_ids.push(f.id);
-    day.estimated_minutes += 2; // Assuming 2 mins per flashcard
+    day.estimated_minutes += 2; 
     
     flashcardIndex = (flashcardIndex + 1) % daysAvailable;
   }
@@ -75,8 +74,6 @@ export function buildSchedule(
   for (const day of schedule) {
     if (day.question_ids.length > 0) {
       const dayQuestions = questions.filter(q => day.question_ids.includes(q.id));
-      // Just pick the category of the first question as the focus for simplicity
-      // In a real app we might aggregate them.
       const categories = new Set(dayQuestions.map(q => q.category));
       day.focus = Array.from(categories).join(' & ') + ' Practice';
     } else if (day.flashcard_ids.length > 0) {
