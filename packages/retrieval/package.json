@@ -1,0 +1,29 @@
+{
+  "name": "@interview-prep-kit/retrieval",
+  "version": "1.0.0",
+  "private": true,
+  "description": "URL validation (SSRF), robots.txt, fetch+retry, HTML→text, crawler, link ranking",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@interview-prep-kit/shared": "workspace:*",
+    "@mozilla/readability": "^0.5.0",
+    "cheerio": "^1.0.0",
+    "ip-address": "^9.0.5",
+    "robots-parser": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}
