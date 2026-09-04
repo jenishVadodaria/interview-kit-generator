@@ -58,6 +58,26 @@ kitRouter.delete('/:id', async (req, res) => {
   }
 });
 
+kitRouter.put('/:id', async (req, res) => {
+  try {
+    // Assuming the body contains the entire updated kit
+    const updatedKit = req.body;
+    // Security check: ensure user owns the kit before updating
+    const existingKit = await repository.getKitByIdAndUserId(req.params.id, req.session.userId!);
+    if (!existingKit) {
+      res.status(404).json({ error: 'Kit not found' });
+      return;
+    }
+    
+    // In a real app we'd validate the incoming kit against KitSchema
+    await repository.updateKit(req.params.id, req.session.userId!, updatedKit);
+    res.json({ success: true, kit: updatedKit });
+  } catch (error) {
+    console.error('Failed to update kit:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 kitRouter.post('/generate', async (req, res) => {
   try {
     const schema = z.object({
