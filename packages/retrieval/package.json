@@ -5,12 +5,7 @@
   "description": "URL validation (SSRF), robots.txt, fetch+retry, HTML→text, crawler, link ranking",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "typecheck": "tsc --noEmit"

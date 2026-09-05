@@ -5,12 +5,7 @@
   "description": "JD requirement extraction and company brief generation via LLM",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "typecheck": "tsc --noEmit"
