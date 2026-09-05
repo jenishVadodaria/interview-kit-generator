@@ -14,6 +14,7 @@
     "dev:web": "pnpm --filter web dev",
     "dev": "concurrently \"pnpm dev:api\" \"pnpm dev:web\"",
     "build": "pnpm -r --workspace-concurrency=1 build",
+    "build:ci": "pnpm --filter @interview-prep-kit/shared build && pnpm --filter @interview-prep-kit/llm build && pnpm --filter @interview-prep-kit/coverage build && pnpm --filter @interview-prep-kit/research build && pnpm --filter @interview-prep-kit/retrieval build && pnpm --filter @interview-prep-kit/scheduling build && pnpm --filter @interview-prep-kit/persistence build && pnpm --filter @interview-prep-kit/extraction build && pnpm --filter @interview-prep-kit/generation build && pnpm --filter @interview-prep-kit/pipeline build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
