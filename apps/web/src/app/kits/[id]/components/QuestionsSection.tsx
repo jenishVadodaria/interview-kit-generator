@@ -5,7 +5,9 @@ import { Kit, Question, Category } from '@interview-prep-kit/shared';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, ChevronDown } from 'lucide-react';
+import { GripVertical, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { useApi } from '@/hooks/useApi';
+import { useToast } from '@/components/Toast';
 
 interface Props {
   kit: Kit;
@@ -20,7 +22,10 @@ const CATEGORIES: { id: Category; label: string }[] = [
 ];
 
 export function QuestionsSection({ kit, onUpdate }: Props) {
+  const { fetchApi } = useApi();
+  const { addToast } = useToast();
   const [activeCategory, setActiveCategory] = useState<Category>('technical');
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const questionsInCat = kit.questions.filter(q => q.category === activeCategory);
 
   const sensors = useSensors(
@@ -33,7 +38,6 @@ export function QuestionsSection({ kit, onUpdate }: Props) {
     if (over && active.id !== over.id) {
       const oldIndex = kit.questions.findIndex(q => q.id === active.id);
       const newIndex = kit.questions.findIndex(q => q.id === over.id);
-      
       const newQuestions = arrayMove(kit.questions, oldIndex, newIndex);
       onUpdate({ ...kit, questions: newQuestions });
     }
@@ -49,10 +53,39 @@ export function QuestionsSection({ kit, onUpdate }: Props) {
     onUpdate({ ...kit, questions: newQuestions });
   };
 
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      const result = await fetchApi(`/kits/${kit.id}/regenerate/questions`, { method: 'POST' });
+      onUpdate({ ...kit, questions: result.questions, schedule: result.schedule });
+      addToast('Questions regenerated successfully!', 'success');
+    } catch (err: any) {
+      addToast(err.message || 'Failed to regenerate questions', 'error');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header with regenerate button */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-400">{kit.questions.length} questions across all categories</p>
+        <button
+          onClick={handleRegenerate}
+          disabled={isRegenerating}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isRegenerating ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Regenerating...</>
+          ) : (
+            <><RefreshCw className="w-4 h-4" /> Regenerate</>
+          )}
+        </button>
+      </div>
+
       {/* Category Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2">
         {CATEGORIES.map((cat) => (
           <button
             key={cat.id}

@@ -1,7 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useApi } from '@/hooks/useApi';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 interface User {
   id: string;
@@ -20,23 +19,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { fetchApi } = useApi();
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       setIsLoading(true);
-      const userData = await fetchApi('/auth/me');
-      setUser(userData); 
-    } catch (err) {
+      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/auth/me`;
+      const response = await fetch(url, { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data);
+      } else {
+        setUser(null);
+      }
+    } catch {
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, checkAuth, setUser }}>

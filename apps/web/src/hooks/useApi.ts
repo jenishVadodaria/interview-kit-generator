@@ -25,8 +25,9 @@ export function useApi() {
     try {
       const response = await fetch(url, config);
       
-      // Handle 401 Unauthorized globally
-      if (response.status === 401) {
+      // Handle 401 Unauthorized globally — but NOT for auth endpoints
+      // (a 401 from /auth/login means bad credentials, not session expiry)
+      if (response.status === 401 && !endpoint.startsWith('/auth')) {
         router.push('/login');
         throw new Error('Unauthorized');
       }

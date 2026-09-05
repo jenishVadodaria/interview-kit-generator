@@ -16,7 +16,7 @@ practiceRouter.post('/sessions', async (req, res) => {
     const schema = z.object({
       kit_id: z.string().min(1),
       flashcard_ratings: z.array(z.object({
-        flashcard_id: z.string().regex(/^f\d+$/),
+        flashcard_id: z.string().min(1),
         confidence: z.number().int().min(1).max(5),
       })).min(1),
     });

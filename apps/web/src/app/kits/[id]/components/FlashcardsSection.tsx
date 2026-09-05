@@ -2,7 +2,9 @@
 
 import { Kit, Flashcard } from '@interview-prep-kit/shared';
 import { useState } from 'react';
-import { BrainCircuit, Trash2 } from 'lucide-react';
+import { BrainCircuit, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { useApi } from '@/hooks/useApi';
+import { useToast } from '@/components/Toast';
 
 interface Props {
   kit: Kit;
@@ -10,6 +12,10 @@ interface Props {
 }
 
 export function FlashcardsSection({ kit, onUpdate }: Props) {
+  const { fetchApi } = useApi();
+  const { addToast } = useToast();
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
   const handleFlashcardUpdate = (id: string, updates: Partial<Flashcard>) => {
     const newCards = kit.flashcards.map(f => f.id === id ? { ...f, ...updates } : f);
     onUpdate({ ...kit, flashcards: newCards });
@@ -20,14 +26,38 @@ export function FlashcardsSection({ kit, onUpdate }: Props) {
     onUpdate({ ...kit, flashcards: newCards });
   };
 
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      const result = await fetchApi(`/kits/${kit.id}/regenerate/flashcards`, { method: 'POST' });
+      onUpdate({ ...kit, flashcards: result.flashcards, schedule: result.schedule });
+      addToast('Flashcards regenerated successfully!', 'success');
+    } catch (err: any) {
+      addToast(err.message || 'Failed to regenerate flashcards', 'error');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <BrainCircuit className="w-5 h-5 text-indigo-400" />
           <h2 className="text-xl font-bold text-white">Spaced Repetition Flashcards</h2>
+          <span className="text-sm font-medium text-slate-400">{kit.flashcards.length} cards</span>
         </div>
-        <span className="text-sm font-medium text-slate-400">{kit.flashcards.length} cards</span>
+        <button
+          onClick={handleRegenerate}
+          disabled={isRegenerating}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isRegenerating ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Regenerating...</>
+          ) : (
+            <><RefreshCw className="w-4 h-4" /> Regenerate</>
+          )}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -59,7 +89,7 @@ function FlashcardItem({ card, onUpdate, onDelete }: { card: Flashcard, onUpdate
       <div className="p-4 border-b border-slate-800/50 bg-slate-800/20">
         <div className="flex justify-between items-center mb-2">
           <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Front (Question)</span>
-          <button 
+          <button
             onClick={onDelete}
             className="text-slate-600 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
           >
@@ -74,7 +104,7 @@ function FlashcardItem({ card, onUpdate, onDelete }: { card: Flashcard, onUpdate
           rows={3}
         />
       </div>
-      
+
       <div className="p-4">
         <div className="mb-2">
           <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Back (Answer)</span>

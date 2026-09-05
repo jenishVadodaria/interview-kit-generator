@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617; /* slate-950 always */
+  --foreground: #f8fafc;
 }
 
 @theme inline {
@@ -12,15 +12,30 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Toast progress bar shrink animation */
+@keyframes toast-shrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* Hide scrollbars while keeping scroll behaviour */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Print styles: hide chrome, show content only */
+@media print {
+  body > *:not(.print-target) {
+    display: none !important;
+  }
 }

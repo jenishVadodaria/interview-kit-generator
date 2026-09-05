@@ -5,10 +5,10 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApi } from '@/hooks/useApi';
-import { LayoutDashboard, PlusCircle, LogOut, Settings, FolderOpen, Loader2, Target } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, LogOut, FolderOpen, Loader2, Target } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, checkAuth, setUser } = useAuth();
+  const { user, isLoading, setUser } = useAuth();
   const { fetchApi } = useApi();
   const router = useRouter();
   const pathname = usePathname();
@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <span className="text-xl font-bold tracking-tight text-white">Prep Kit</span>
         </div>
-        
+
         <nav className="flex-1 px-4 space-y-2 mt-4">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="text-xs font-medium text-slate-500 mb-1">Logged in as</div>
             <div className="text-sm font-medium text-slate-300 truncate">{user.email}</div>
           </div>
-          
+
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
@@ -102,7 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Mobile Header (simplified) */}
+        {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl">
           <div className="flex items-center gap-2">
             <Target className="w-6 h-6 text-indigo-500" />

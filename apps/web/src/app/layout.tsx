@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ToastProvider } from "@/components/Toast";
 
 export const metadata: Metadata = {
   title: "Interview Prep Kit",
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full flex flex-col bg-slate-950 text-slate-50 selection:bg-indigo-500/30">
         <AuthProvider>
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
