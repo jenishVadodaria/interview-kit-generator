@@ -13,7 +13,7 @@
     "dev:api": "tsx watch apps/api/src/index.ts",
     "dev:web": "pnpm --filter web dev",
     "dev": "concurrently \"pnpm dev:api\" \"pnpm dev:web\"",
-    "build": "pnpm -r build",
+    "build": "pnpm -r --workspace-concurrency=1 build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
