@@ -4,5 +4,5 @@ packages:
 allowBuilds:
   bcrypt: true
   esbuild: true
-  mongodb-memory-server: set this to true or false
+  mongodb-memory-server: false
   unrs-resolver: true
