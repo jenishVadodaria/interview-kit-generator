@@ -33,7 +33,7 @@ export async function* runKitPipeline(input: PipelineInput): AsyncGenerator<Pipe
   try {
     yield { step: 'research', status: 'running', message: 'Crawling company site and gathering data...' };
     
-    // 1. Research
+    // 1. Research — crawl + discussion search can run in parallel (no LLM calls)
     const crawlOptions: { allowPrivate?: boolean } = {};
     if (allowPrivateUrls !== undefined) crawlOptions.allowPrivate = allowPrivateUrls;
 
@@ -47,19 +47,22 @@ export async function* runKitPipeline(input: PipelineInput): AsyncGenerator<Pipe
     
     yield { step: 'research', status: 'success', message: 'Research complete.' };
 
-    // 2. Extraction
+    // 2. Extraction — sequential LLM calls to respect rate limits
     yield { step: 'extraction', status: 'running', message: 'Extracting requirements and building brief...' };
     
-    const [brief, extraction] = await Promise.all([
-      generateCompanyBrief(pages, new URL(companyUrl).hostname, discussions.found ? discussions.discussions : undefined).catch(() => ({
-        company_name: 'Unknown',
-        summary: 'Limited information.',
-        culture_notes: '',
-        recent_news: [],
-        sources: []
-      })),
-      extractRequirements(jd)
-    ]);
+    const brief = await generateCompanyBrief(
+      pages,
+      new URL(companyUrl).hostname,
+      discussions.found ? discussions.discussions : undefined
+    ).catch(() => ({
+      company_name: 'Unknown',
+      summary: 'Limited information.',
+      culture_notes: '',
+      recent_news: [],
+      sources: []
+    }));
+
+    const extraction = await extractRequirements(jd);
     
     if (extraction.requirements.length === 0) {
       throw new Error('Failed to extract any requirements from the JD.');
@@ -71,30 +74,27 @@ export async function* runKitPipeline(input: PipelineInput): AsyncGenerator<Pipe
 
     yield { step: 'extraction', status: 'success', message: 'Extraction complete.' };
 
-    // 3. Generation
+    // 3. Generation — sequential per-category inside generateAllQuestions
     yield { step: 'generation', status: 'running', message: 'Generating interview questions...' };
     
-    // Pass brief summary for company-fit grounding and discussions for real context
     questions = await generateAllQuestions(requirements, companyBrief.summary, false, discussions.found ? discussions.discussions : undefined);
     
     yield { step: 'generation', status: 'success', message: 'Questions generated.' };
 
-    // 4. Coverage (Gap detection)
+    // 4. Coverage (Gap detection) — pure function, no LLM
     yield { step: 'coverage', status: 'running', message: 'Checking requirement coverage...' };
     
     let coverage = checkCoverage(requirements, questions);
     let passes = 1;
-    // We can do gap-fill here if needed, but for simplicity we just record it.
-    // TODO: Implement gap-fill loop to regenerate questions for uncovered must_know requirements.
     
     yield { step: 'coverage', status: 'success', message: `Coverage complete after ${passes} pass(es).` };
 
-    // 5. Flashcards
+    // 5. Flashcards — single LLM call
     yield { step: 'flashcards', status: 'running', message: 'Creating study flashcards...' };
     flashcards = await generateFlashcards(requirements, questions);
     yield { step: 'flashcards', status: 'success', message: 'Flashcards generated.' };
 
-    // 6. Scheduling
+    // 6. Scheduling — pure function, no LLM
     yield { step: 'scheduling', status: 'running', message: 'Building study schedule...' };
     schedule = buildSchedule(requirements, questions, flashcards, days);
     yield { step: 'scheduling', status: 'success', message: 'Schedule built.' };

@@ -73,14 +73,17 @@ export async function generateAllQuestions(
     categories.push('system_design');
   }
 
-  const allQuestionsPromises = categories.map(cat => generateQuestions(requirements, cat, briefSummary, discussions));
-  const results = await Promise.all(allQuestionsPromises);
+  const results: Omit<Question, 'id'>[][] = [];
+  for (const cat of categories) {
+    const qs = await generateQuestions(requirements, cat, briefSummary, discussions);
+    results.push(qs);
+  }
   
   const allQuestions = results.flat();
   
   // Code assigns IDs
   return allQuestions.map((q, i) => ({
-    id: `q${i + 1}`,
-    ...q
+    ...q,
+    id: `q${i + 1}`
   }));
 }
