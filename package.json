@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "AI-powered interview preparation kit generator",
+  "packageManager": "pnpm@11.5.1",
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"

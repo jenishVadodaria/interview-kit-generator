@@ -17,6 +17,8 @@ const FRONTEND_URL = process.env['FRONTEND_URL'] ?? 'http://localhost:3000';
 app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json({ limit: '500kb' }));
 
+app.set('trust proxy', 1);
+
 app.use(
   session({
     secret: SESSION_SECRET,
@@ -26,6 +28,7 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env['NODE_ENV'] === 'production',
+      sameSite: process.env['NODE_ENV'] === 'production' ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
   })
