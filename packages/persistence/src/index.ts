@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
-import { Kit } from '@interview-prep-kit/shared';
+import { Kit, PracticeSession } from '@interview-prep-kit/shared';
 
 export interface IKitDocument extends Document<string>, Omit<Kit, 'id'> {
   _id: string;
@@ -65,5 +65,64 @@ export class KitRepository {
       id: _id,
       ...rest
     } as Kit;
+  }
+}
+
+// --- Practice Session ---
+
+export interface IPracticeSessionDocument extends Document<string>, Omit<PracticeSession, 'id'> {
+  _id: string;
+}
+
+const practiceSessionSchema = new Schema<IPracticeSessionDocument>({
+  _id: { type: String, required: true },
+  kit_id: { type: String, required: true, index: true },
+  user_id: { type: String, required: true, index: true },
+  created_at: { type: String, required: true },
+  flashcard_ratings: { type: Schema.Types.Mixed, required: true },
+}, {
+  _id: false,
+});
+
+// Compound index: efficiently query all sessions for a specific user's kit
+practiceSessionSchema.index({ kit_id: 1, user_id: 1 });
+
+export const PracticeSessionModel =
+  (mongoose.models.PracticeSession as Model<IPracticeSessionDocument>) ||
+  mongoose.model<IPracticeSessionDocument>('PracticeSession', practiceSessionSchema);
+
+export class PracticeSessionRepository {
+  async createSession(session: PracticeSession): Promise<PracticeSession> {
+    const doc = new PracticeSessionModel({
+      ...session,
+      _id: session.id,
+    });
+    await doc.save();
+    return session;
+  }
+
+  async getSessionsByKitId(kitId: string, userId: string): Promise<PracticeSession[]> {
+    const docs = await PracticeSessionModel
+      .find({ kit_id: kitId, user_id: userId })
+      .sort({ created_at: -1 })
+      .lean()
+      .exec();
+    return docs.map(this.mapToSession);
+  }
+
+  async getSessionById(id: string, userId: string): Promise<PracticeSession | null> {
+    const doc = await PracticeSessionModel
+      .findOne({ _id: id, user_id: userId })
+      .lean()
+      .exec();
+    return doc ? this.mapToSession(doc) : null;
+  }
+
+  private mapToSession(doc: any): PracticeSession {
+    const { _id, __v, ...rest } = doc;
+    return {
+      id: _id,
+      ...rest
+    } as PracticeSession;
   }
 }

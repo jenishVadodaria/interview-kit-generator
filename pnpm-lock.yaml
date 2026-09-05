@@ -47,12 +47,18 @@ importers:
       '@interview-prep-kit/coverage':
         specifier: workspace:*
         version: link:../../packages/coverage
+      '@interview-prep-kit/generation':
+        specifier: workspace:*
+        version: link:../../packages/generation
       '@interview-prep-kit/persistence':
         specifier: workspace:*
         version: link:../../packages/persistence
       '@interview-prep-kit/pipeline':
         specifier: workspace:*
         version: link:../../packages/pipeline
+      '@interview-prep-kit/scheduling':
+        specifier: workspace:*
+        version: link:../../packages/scheduling
       '@interview-prep-kit/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -236,9 +242,6 @@ importers:
       '@interview-prep-kit/shared':
         specifier: workspace:*
         version: link:../shared
-      openai:
-        specifier: ^7.10.0
-        version: 7.10.0(undici@8.10.1)(zod@3.25.76)
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -3570,30 +3573,6 @@ packages:
   onetime@6.0.0:
     resolution: {integrity: sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ==}
     engines: {node: '>=12'}
-
-  openai@7.10.0:
-    resolution: {integrity: sha512-sn9t2Kls7O52PwuF9BUTYNu4Gk/r0lXJyrgaNht4TNRlZFb3dJIGO0RciSgjARGCBRtWjySubAQFJttlzUvGQQ==}
-    engines: {node: '>=22.0.0'}
-    peerDependencies:
-      '@aws-sdk/credential-provider-node': '>=3.972.0 <4'
-      '@smithy/hash-node': '>=4.3.0 <5'
-      '@smithy/signature-v4': '>=5.4.0 <6'
-      undici: '>=5 <9'
-      ws: ^8.21.0
-      zod: ^3.25 || ^4.0
-    peerDependenciesMeta:
-      '@aws-sdk/credential-provider-node':
-        optional: true
-      '@smithy/hash-node':
-        optional: true
-      '@smithy/signature-v4':
-        optional: true
-      undici:
-        optional: true
-      ws:
-        optional: true
-      zod:
-        optional: true
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -7784,11 +7763,6 @@ snapshots:
   onetime@6.0.0:
     dependencies:
       mimic-fn: 4.0.0
-
-  openai@7.10.0(undici@8.10.1)(zod@3.25.76):
-    optionalDependencies:
-      undici: 8.10.1
-      zod: 3.25.76
 
   optionator@0.9.4:
     dependencies:

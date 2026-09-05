@@ -80,13 +80,41 @@ export type CompanyBrief = z.infer<typeof CompanyBriefSchema>;
 
 // --- Interview Readiness Score (creative feature) ---
 
+export const WeakSpotSchema = z.object({
+  requirement_id: z.string().regex(/^r\d+$/),
+  reason: z.string(),
+});
+export type WeakSpot = z.infer<typeof WeakSpotSchema>;
+
 export const ReadinessScoreSchema = z.object({
   overall: z.number().min(0).max(100),
-  by_category: z.record(CategoryEnum, z.number().min(0).max(100)),
+  coverage_pct: z.number().min(0).max(100),
+  schedule_pct: z.number().min(0).max(100),
+  practice_pct: z.number().min(0).max(100),
+  confidence_avg: z.number().min(0).max(100),
+  by_category: z.record(z.string(), z.number().min(0).max(100)),
+  weak_spots: z.array(WeakSpotSchema),
   gap_count: z.number().int().min(0),
   rationale: z.string(),
 });
 export type ReadinessScore = z.infer<typeof ReadinessScoreSchema>;
+
+// --- Practice Session ---
+
+export const FlashcardRatingSchema = z.object({
+  flashcard_id: z.string().regex(/^f\d+$/),
+  confidence: z.number().int().min(1).max(5),
+});
+export type FlashcardRating = z.infer<typeof FlashcardRatingSchema>;
+
+export const PracticeSessionSchema = z.object({
+  id: z.string().min(1),
+  kit_id: z.string().min(1),
+  user_id: z.string().min(1),
+  created_at: z.string(),
+  flashcard_ratings: z.array(FlashcardRatingSchema).min(1),
+});
+export type PracticeSession = z.infer<typeof PracticeSessionSchema>;
 
 // --- Kit (Appendix A) ---
 
@@ -142,3 +170,4 @@ export const BatchOutputSchema = z.object({
   kits: z.array(BatchOutputItemSchema),
 });
 export type BatchOutput = z.infer<typeof BatchOutputSchema>;
+

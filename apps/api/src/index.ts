@@ -6,6 +6,7 @@ import MongoStore from 'connect-mongo';
 import { connectDb } from './db.js';
 import { authRouter } from './routes/auth.js';
 import { kitRouter } from './routes/kits.js';
+import { practiceRouter } from './routes/practice.js';
 
 const app: Express = express();
 const PORT = process.env['PORT'] ?? 5000;
@@ -32,6 +33,7 @@ app.use(
 
 app.use('/auth', authRouter);
 app.use('/kits', kitRouter);
+app.use('/practice', practiceRouter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

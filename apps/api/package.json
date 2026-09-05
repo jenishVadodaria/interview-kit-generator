@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@interview-prep-kit/coverage": "workspace:*",
+    "@interview-prep-kit/generation": "workspace:*",
     "@interview-prep-kit/persistence": "workspace:*",
     "@interview-prep-kit/pipeline": "workspace:*",
+    "@interview-prep-kit/scheduling": "workspace:*",
     "@interview-prep-kit/shared": "workspace:*",
     "bcrypt": "^5.1.1",
     "connect-mongo": "^5.1.0",
