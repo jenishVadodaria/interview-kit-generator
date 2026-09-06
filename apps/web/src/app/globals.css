@@ -33,9 +33,11 @@ body {
   display: none;
 }
 
-/* Print styles: hide chrome, show content only */
+/* Print styles */
 @media print {
-  body > *:not(.print-target) {
-    display: none !important;
+  html, body {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
   }
 }

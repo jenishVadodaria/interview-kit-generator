@@ -71,11 +71,19 @@ export function buildSchedule(
   }
 
   // 5. Generate focus strings based on the day's questions
+  const CATEGORY_LABELS: Record<string, string> = {
+    technical: 'Technical',
+    behavioural: 'Behavioural',
+    system_design: 'System Design',
+    company_fit: 'Company Fit',
+  };
+
   for (const day of schedule) {
     if (day.question_ids.length > 0) {
       const dayQuestions = questions.filter(q => day.question_ids.includes(q.id));
       const categories = new Set(dayQuestions.map(q => q.category));
-      day.focus = Array.from(categories).join(' & ') + ' Practice';
+      const labels = Array.from(categories).map(c => CATEGORY_LABELS[c] || c);
+      day.focus = labels.join(' & ') + ' Practice';
     } else if (day.flashcard_ids.length > 0) {
       day.focus = 'Flashcard Review';
     } else {

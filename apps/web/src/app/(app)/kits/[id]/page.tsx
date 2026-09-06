@@ -56,11 +56,11 @@ function ExportModal({ data, onClose }: { data: ExportData; onClose: () => void 
 
   return (
     <div
-      className="fixed inset-0 z-[9997] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[9997] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm print:hidden"
       onClick={onClose}
     >
       <div
-        className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+        className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto break-words"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -69,15 +69,15 @@ function ExportModal({ data, onClose }: { data: ExportData; onClose: () => void 
             <h2 className="text-lg font-bold text-white">{data.job_title}</h2>
             <p className="text-sm text-slate-400">{data.company_name}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 no-print">
             <button
               onClick={() => window.print()}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               Print
             </button>
-            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1">
+            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1 cursor-pointer">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -103,7 +103,7 @@ function ExportModal({ data, onClose }: { data: ExportData; onClose: () => void 
           <div className="bg-slate-800/30 border border-slate-700 rounded-xl p-5">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Readiness Score</h3>
             <div className="flex items-center gap-6">
-              <p className={`text-5xl font-black ${scoreColor}`}>{data.readiness_score.overall}</p>
+              <p className={`text-5xl font-black ${scoreColor}`}>{Math.min(100, data.readiness_score.overall)}</p>
               <div className="flex-1 space-y-2">
                 {[
                   { label: 'Coverage', value: data.readiness_score.coverage_pct },
@@ -192,6 +192,69 @@ function ExportModal({ data, onClose }: { data: ExportData; onClose: () => void 
   );
 }
 
+function PrintableExport({ data }: { data: ExportData }) {
+  return (
+    <div className="hidden print:block bg-white text-black font-sans p-8 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-1">{data.job_title}</h1>
+      <h2 className="text-xl text-gray-600 mb-6">{data.company_name}</h2>
+      
+      <div className="mb-8 pb-4 border-b border-gray-300">
+        <p className="mb-2"><strong>Company URL:</strong> {data.company_url}</p>
+        <p className="mb-2"><strong>Time Available:</strong> {data.days_available} Days</p>
+        <p><strong>Overall Readiness:</strong> {Math.round(data.readiness_score.overall)}%</p>
+      </div>
+
+      <div className="mb-8">
+        <h3 className="text-xl font-bold border-b border-gray-300 mb-4 pb-2">Preparation Stats</h3>
+        <ul className="list-disc pl-5">
+          <li>Requirements Mapped: {data.stats.total_requirements}</li>
+          <li>Practice Questions: {data.stats.total_questions}</li>
+          <li>Flashcards: {data.stats.total_flashcards}</li>
+          <li>Practice Sessions Completed: {data.stats.total_practice_sessions}</li>
+        </ul>
+      </div>
+
+      {data.schedule_overview.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-xl font-bold border-b border-gray-300 mb-4 pb-2">Schedule Overview</h3>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th className="border border-gray-300 p-2 bg-gray-100">Day</th>
+                <th className="border border-gray-300 p-2 bg-gray-100">Focus</th>
+                <th className="border border-gray-300 p-2 bg-gray-100">Est. Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.schedule_overview.map(day => (
+                <tr key={day.day}>
+                  <td className="border border-gray-300 p-2 text-center">{day.day}</td>
+                  <td className="border border-gray-300 p-2">{day.focus}</td>
+                  <td className="border border-gray-300 p-2 text-center">{day.estimated_minutes}m</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {data.top_hard_questions.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold border-b border-gray-300 mb-4 pb-2">Top Questions to Master</h3>
+          <ol className="list-decimal pl-5 space-y-4">
+            {data.top_hard_questions.map((q, i) => (
+              <li key={q.id}>
+                <strong>{q.text}</strong>
+                <p className="text-gray-600 italic mt-1 text-sm">Hint: {q.answer_hint}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- Main Page ---
 export default function KitBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -241,6 +304,7 @@ export default function KitBuilderPage({ params }: { params: Promise<{ id: strin
       setExportData(data);
     } catch (err: any) {
       console.error('Export failed:', err);
+      setError('Export failed: ' + (err.message || 'Unknown error'));
     } finally {
       setIsExporting(false);
     }
@@ -267,51 +331,55 @@ export default function KitBuilderPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <div className="min-h-screen pb-20">
-      {/* Export Modal */}
-      {exportData && (
-        <ExportModal data={exportData} onClose={() => setExportData(null)} />
-      )}
+    <>
+      <div className="min-h-screen pb-20 print:hidden">
+        {/* Export Modal */}
+        {exportData && (
+          <ExportModal data={exportData} onClose={() => setExportData(null)} />
+        )}
 
-      {/* Top Navigation Bar */}
-      <div className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="p-2 -ml-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-white leading-tight">{kit.job_title}</h1>
-            <p className="text-sm text-slate-400">{kit.company_brief.company_name}</p>
+        {/* Top Navigation Bar */}
+        <div className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="p-2 -ml-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-bold text-white leading-tight">{kit.job_title}</h1>
+              <p className="text-sm text-slate-400">{kit.company_brief.company_name}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-slate-500 flex items-center gap-2">
+              {isSaving ? (
+                <><Loader2 className="w-3 h-3 animate-spin" /> Saving...</>
+              ) : (
+                'All changes saved'
+              )}
+            </span>
+            <button
+              onClick={handleExport}
+              disabled={isExporting}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-800 hover:bg-slate-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Printer className="w-4 h-4" />
+              )}
+              {isExporting ? 'Loading...' : 'Export'}
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-slate-500 flex items-center gap-2">
-            {isSaving ? (
-              <><Loader2 className="w-3 h-3 animate-spin" /> Saving...</>
-            ) : (
-              'All changes saved'
-            )}
-          </span>
-          <button
-            onClick={handleExport}
-            disabled={isExporting}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-800 hover:bg-slate-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isExporting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Printer className="w-4 h-4" />
-            )}
-            {isExporting ? 'Loading...' : 'Export'}
-          </button>
-        </div>
+        {/* Builder Content */}
+        <main className="max-w-6xl mx-auto px-4 py-8">
+          <KitBuilderTabs kit={kit} onUpdate={handleUpdateKit} />
+        </main>
       </div>
-
-      {/* Builder Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <KitBuilderTabs kit={kit} onUpdate={handleUpdateKit} />
-      </main>
-    </div>
+      
+      {exportData && <PrintableExport data={exportData} />}
+    </>
   );
 }

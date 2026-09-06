@@ -46,20 +46,16 @@ export function RoleBriefSection({ kit, onUpdate }: Props) {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">Company Summary</label>
-              <textarea
-                value={briefSummary}
-                onChange={(e) => setBriefSummary(e.target.value)}
-                className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl p-4 text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all resize-y min-h-[120px]"
-              />
+              <div className="w-full bg-slate-900/50 text-white p-4 rounded-xl border border-slate-700/50 whitespace-pre-wrap text-sm leading-relaxed">
+                {briefSummary}
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">Culture & Interview Notes</label>
-              <textarea
-                value={cultureNotes}
-                onChange={(e) => setCultureNotes(e.target.value)}
-                className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl p-4 text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all resize-y min-h-[120px]"
-              />
+              <div className="w-full bg-slate-900/50 text-white p-4 rounded-xl border border-slate-700/50 whitespace-pre-wrap text-sm leading-relaxed">
+                {cultureNotes}
+              </div>
             </div>
           </div>
         </div>
@@ -120,12 +116,16 @@ export function RoleBriefSection({ kit, onUpdate }: Props) {
           <ul className="space-y-2">
             {kit.company_brief.sources.map((url, i) => {
               try {
-                const domain = new URL(url).hostname;
+                const parsedUrl = new URL(url);
+                // Remove trailing slash for cleaner look
+                const path = parsedUrl.pathname === '/' ? '' : parsedUrl.pathname.replace(/\/$/, '');
+                const displayUrl = parsedUrl.hostname + path;
+                
                 return (
                   <li key={i}>
                     <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors bg-slate-950/50 p-2 rounded-lg border border-slate-800/50 hover:border-indigo-500/30 group">
                       <ExternalLink className="w-4 h-4 shrink-0" />
-                      <span className="truncate group-hover:underline">{domain}</span>
+                      <span className="truncate group-hover:underline" title={url}>{displayUrl}</span>
                     </a>
                   </li>
                 );

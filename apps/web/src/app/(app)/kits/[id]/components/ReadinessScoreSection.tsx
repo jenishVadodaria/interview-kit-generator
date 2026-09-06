@@ -108,10 +108,10 @@ export function ReadinessScoreSection({ kit, onUpdate }: Props) {
   };
 
   const COMPONENTS = [
-    { key: 'coverage_pct', label: 'Question Coverage', icon: Target, color: 'text-indigo-400' },
-    { key: 'schedule_pct', label: 'Schedule Adherence', icon: BookOpen, color: 'text-violet-400' },
-    { key: 'practice_pct', label: 'Flashcard Practice', icon: Dumbbell, color: 'text-amber-400' },
-    { key: 'confidence_avg', label: 'Self Confidence', icon: Heart, color: 'text-pink-400' },
+    { key: 'confidence_avg', label: 'Practice Confidence', icon: Heart, color: 'text-pink-400' },
+    { key: 'practice_pct', label: 'Study Progress', icon: Dumbbell, color: 'text-amber-400' },
+    { key: 'coverage_pct', label: 'Content Coverage (auto)', icon: Target, color: 'text-indigo-400' },
+    { key: 'schedule_pct', label: 'Schedule Density (auto)', icon: BookOpen, color: 'text-violet-400' },
   ] as const;
 
   return (
@@ -125,7 +125,7 @@ export function ReadinessScoreSection({ kit, onUpdate }: Props) {
         <button
           onClick={calculate}
           disabled={isCalculating}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isCalculating ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Calculating...</>

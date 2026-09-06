@@ -13,9 +13,6 @@ export type Priority = z.infer<typeof PriorityEnum>;
 export const KindEnum = z.enum(['skill', 'experience', 'trait', 'knowledge']);
 export type Kind = z.infer<typeof KindEnum>;
 
-export const BatchStatusEnum = z.enum(['ok', 'partial', 'error']);
-export type BatchStatus = z.infer<typeof BatchStatusEnum>;
-
 // --- Requirement ---
 
 export const RequirementSchema = z.object({
@@ -150,17 +147,26 @@ export type BatchInput = z.infer<typeof BatchInputSchema>;
 
 // --- Batch Output (Appendix B) ---
 
+export const BatchStatusEnum = z.enum(['ok', 'failed']);
+export type BatchStatus = z.infer<typeof BatchStatusEnum>;
+
+export const BatchOutputErrorSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+});
+export type BatchOutputError = z.infer<typeof BatchOutputErrorSchema>;
+
 export const BatchOutputItemSchema = z.object({
   id: z.string().min(1),
   status: BatchStatusEnum,
-  kit: KitSchema.optional(),
-  error: z.string().optional(),
+  kit: KitSchema.nullable().optional(),
+  error: BatchOutputErrorSchema.nullable().optional(),
 }).refine(
   (item) => item.status !== 'ok' || item.kit !== undefined,
   { message: 'kit is required when status is ok' }
 ).refine(
-  (item) => item.status !== 'error' || item.error !== undefined,
-  { message: 'error is required when status is error' }
+  (item) => item.status !== 'failed' || item.error !== undefined,
+  { message: 'error is required when status is failed' }
 );
 export type BatchOutputItem = z.infer<typeof BatchOutputItemSchema>;
 

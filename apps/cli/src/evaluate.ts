@@ -69,9 +69,13 @@ async function evaluate() {
       console.error(`Failed on case ${item.id}:`, err.message);
       outputKits.push({
         id: item.id,
-        status: 'error',
-        error: err.message
-      });
+        status: 'failed',
+        kit: null,
+        error: {
+          code: 'GENERATION_FAILED',
+          message: err.message
+        }
+      } as any);
     }
   }
 

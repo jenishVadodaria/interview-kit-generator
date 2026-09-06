@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, PlusCircle, LogOut, FolderOpen, Loader2, Target } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, LogOut, FolderOpen, Loader2, Target, Layers } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
@@ -41,13 +41,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Create Kit', href: '/kits/new', icon: PlusCircle },
-    { name: 'My Kits', href: '/dashboard', icon: FolderOpen },
+    { name: 'Batch Process', href: '/batch', icon: Layers },
   ];
 
   return (
-    <div className="flex h-screen bg-slate-950">
+    <div className="flex h-screen bg-slate-950 print:h-auto print:bg-transparent">
       {/* Sidebar Navigation */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-900/50 backdrop-blur-xl hidden md:flex flex-col">
+      <aside className="w-64 border-r border-slate-800 bg-slate-900/50 backdrop-blur-xl hidden md:flex flex-col print:hidden">
         <div className="p-6 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
             <Target className="w-5 h-5 text-white" />
@@ -98,9 +98,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden print:overflow-visible">
         {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl">
+        <header className="md:hidden flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl print:hidden">
           <div className="flex items-center gap-2">
             <Target className="w-6 h-6 text-indigo-500" />
             <span className="font-bold text-white">Prep Kit</span>
@@ -111,8 +111,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-5xl mx-auto h-full">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 print:overflow-visible print:p-0">
+          <div className="max-w-5xl mx-auto h-full print:h-auto print:max-w-none">
             {children}
           </div>
         </div>

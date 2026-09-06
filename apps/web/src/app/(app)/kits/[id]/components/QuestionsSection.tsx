@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Kit, Question, Category } from '@interview-prep-kit/shared';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -27,6 +27,22 @@ export function QuestionsSection({ kit, onUpdate }: Props) {
   const [activeCategory, setActiveCategory] = useState<Category>('technical');
   const [isRegenerating, setIsRegenerating] = useState(false);
   const questionsInCat = kit.questions.filter(q => q.category === activeCategory);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#question-')) {
+        const qid = hash.replace('#question-', '');
+        const q = kit.questions.find(x => x.id === qid);
+        if (q && q.category !== activeCategory) {
+          setActiveCategory(q.category);
+        }
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, [kit.questions, activeCategory]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -66,6 +82,13 @@ export function QuestionsSection({ kit, onUpdate }: Props) {
     }
   };
 
+  const handleCategoryClick = (catId: Category) => {
+    setActiveCategory(catId);
+    if (window.location.hash.startsWith('#question-')) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with regenerate button */}
@@ -74,7 +97,7 @@ export function QuestionsSection({ kit, onUpdate }: Props) {
         <button
           onClick={handleRegenerate}
           disabled={isRegenerating}
-          className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isRegenerating ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Regenerating...</>
@@ -89,8 +112,8 @@ export function QuestionsSection({ kit, onUpdate }: Props) {
         {CATEGORIES.map((cat) => (
           <button
             key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            onClick={() => handleCategoryClick(cat.id)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
               activeCategory === cat.id
                 ? 'bg-indigo-600 text-white'
                 : 'bg-slate-900/50 text-slate-400 hover:bg-slate-800'
@@ -147,8 +170,9 @@ function SortableQuestionItem({ question, onUpdate, onDelete }: { question: Ques
   return (
     <div
       ref={setNodeRef}
+      id={`question-${question.id}`}
       style={style}
-      className={`group flex items-start gap-3 bg-slate-900/50 backdrop-blur-xl border ${isDragging ? 'border-indigo-500 shadow-2xl scale-[1.02]' : 'border-slate-800'} rounded-2xl p-4 transition-all`}
+      className={`group flex items-start gap-3 bg-slate-900/50 backdrop-blur-xl border ${isDragging ? 'border-indigo-500 shadow-2xl scale-[1.02]' : 'border-slate-800'} rounded-2xl p-4 transition-all transition-colors duration-500`}
     >
       <button
         {...attributes}
@@ -160,24 +184,16 @@ function SortableQuestionItem({ question, onUpdate, onDelete }: { question: Ques
 
       <div className="flex-1 space-y-3">
         <div>
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onBlur={handleBlur}
-            className="w-full bg-transparent text-white font-medium resize-none focus:outline-none focus:bg-slate-950/50 p-2 -ml-2 rounded-lg border border-transparent focus:border-indigo-500/30 transition-colors"
-            rows={2}
-          />
+          <div className="w-full text-white font-medium p-2 -ml-2">
+            {text}
+          </div>
         </div>
         
-        <div className="flex items-start gap-2">
-          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider pt-2 shrink-0">Hint</span>
-          <textarea
-            value={hint}
-            onChange={(e) => setHint(e.target.value)}
-            onBlur={handleBlur}
-            className="w-full text-sm bg-transparent text-slate-400 resize-none focus:outline-none focus:bg-slate-950/50 p-2 -ml-2 rounded-lg border border-transparent focus:border-indigo-500/30 transition-colors"
-            rows={2}
-          />
+        <div className="flex items-baseline gap-2">
+          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider shrink-0">Hint</span>
+          <div className="text-sm text-slate-400 leading-relaxed">
+            {hint}
+          </div>
         </div>
 
         <div className="flex items-center justify-between pt-2">
@@ -196,7 +212,7 @@ function SortableQuestionItem({ question, onUpdate, onDelete }: { question: Ques
           
           <button 
             onClick={onDelete}
-            className="text-slate-600 hover:text-red-400 p-2 rounded-lg hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
+            className="text-slate-600 hover:text-red-400 p-2 rounded-lg hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
           </button>

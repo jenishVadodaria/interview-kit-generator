@@ -30,7 +30,11 @@ Respond with JSON only.`;
   const reqsText = requirements.map(r => `[ID: ${r.id}] ${r.kind} - ${r.priority} - ${r.text}`).join('\n');
   const qsText = questions.map(q => `[ID: ${q.id} tied to ${q.requirement_ids.join(',')}] ${q.text}`).join('\n');
   
-  const userPrompt = `Requirements:\n${reqsText}\n\nExisting Questions:\n${qsText}\n\nGenerate flashcards to cover key concepts from the requirements, avoiding exactly duplicating the questions.`;
+  // Inject randomness to ensure regeneration produces different results
+  const randomSeed = Math.random().toString(36).substring(7);
+  const userPrompt = `Requirements:\n${reqsText}\n\nExisting Questions:\n${qsText}
+
+IMPORTANT: You are generating a completely FRESH set of flashcards. Do not reuse standard phrasing. Create new, engaging flashcards that test the requirements from different angles or cover edge cases not fully explored yet. Make them highly distinct. Randomization seed for variety: ${randomSeed}`;
 
   const result = await callLLM(systemPrompt, userPrompt, FlashcardsExtractionSchema);
   

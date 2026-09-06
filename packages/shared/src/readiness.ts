@@ -10,11 +10,14 @@ import {
 /**
  * Computes the Interview Readiness Score from kit data + practice sessions.
  *
- * Four equally-weighted components (25% each):
- * 1. Coverage — what % of requirements have at least one question
- * 2. Schedule — what % of available days have actual study content
- * 3. Practice — what % of flashcards have been practiced at least once
- * 4. Confidence — average confidence rating across all practice / 5
+ * Weights:
+ *   - Confidence (50%) — average confidence rating across all practiced flashcards, scaled to 0-100
+ *   - Practice Completion (30%) — what % of flashcards have been practiced at least once
+ *   - Content Coverage (10%) — what % of requirements have at least one question (auto-generated)
+ *   - Schedule Density (10%) — what % of available days have actual study content
+ *
+ * IMPORTANT: If no practice sessions exist, the overall score is 0.
+ * Coverage and Schedule are auto-generated and should not inflate the score.
  *
  * Also identifies "weak spots": requirements whose questions are hard (avg
  * difficulty ≥ 2.5) AND whose related flashcards have never been practiced.
@@ -47,12 +50,17 @@ export function computeReadinessScore(
   const practicedFlashcardIds = new Set<string>();
   const confidenceByFlashcard = new Map<string, number[]>();
 
+  // Only count flashcards that still exist in the kit
+  const validFlashcardIds = new Set(kit.flashcards.map(f => f.id));
+
   for (const session of practiceSessions) {
     for (const rating of session.flashcard_ratings) {
-      practicedFlashcardIds.add(rating.flashcard_id);
-      const existing = confidenceByFlashcard.get(rating.flashcard_id) || [];
-      existing.push(rating.confidence);
-      confidenceByFlashcard.set(rating.flashcard_id, existing);
+      if (validFlashcardIds.has(rating.flashcard_id)) {
+        practicedFlashcardIds.add(rating.flashcard_id);
+        const existing = confidenceByFlashcard.get(rating.flashcard_id) || [];
+        existing.push(rating.confidence);
+        confidenceByFlashcard.set(rating.flashcard_id, existing);
+      }
     }
   }
 
@@ -72,13 +80,17 @@ export function computeReadinessScore(
     ? Math.round((totalConfidence / totalRatings / 5) * 100)
     : 0;
 
-  // --- Overall (equal 25% weights) ---
-  const overall = Math.round(
-    (coveragePct * 0.25) +
-    (schedulePct * 0.25) +
-    (practicePct * 0.25) +
-    (confidenceAvg * 0.25)
-  );
+  // --- Overall (Weighted) ---
+  // If no practice sessions exist at all, the score is 0.
+  // Coverage and schedule are auto-generated and should not inflate the score.
+  const hasPractice = practiceSessions.length > 0;
+  const rawOverall = hasPractice
+    ? (confidenceAvg * 0.50) +
+      (practicePct * 0.30) +
+      (coveragePct * 0.10) +
+      (schedulePct * 0.10)
+    : 0;
+  const overall = Math.min(100, Math.round(rawOverall));
 
   // --- Per-category breakdown ---
   const categories: Category[] = ['technical', 'behavioural', 'system_design', 'company_fit'];
@@ -148,18 +160,23 @@ export function computeReadinessScore(
 
   // --- Rationale ---
   const parts: string[] = [];
-  if (coveragePct >= 90) parts.push('Excellent question coverage');
-  else if (coveragePct >= 70) parts.push('Good question coverage');
-  else parts.push(`Coverage needs work (${coveragePct}%)`);
 
-  if (practicePct >= 80) parts.push('strong practice completion');
-  else if (practicePct >= 40) parts.push('moderate practice progress');
-  else if (practicePct > 0) parts.push('low practice — keep studying');
-  else parts.push('no practice sessions yet');
+  // Start with practice status first (the most important thing)
+  if (!hasPractice) {
+    parts.push('No practice sessions yet — start practicing to build your score');
+  } else {
+    if (confidenceAvg >= 80) parts.push('High confidence from practice');
+    else if (confidenceAvg >= 50) parts.push('Growing confidence — keep practicing');
+    else parts.push(`Low confidence (${confidenceAvg}%) — focus on weak areas`);
 
-  if (confidenceAvg >= 80) parts.push('high confidence');
-  else if (confidenceAvg >= 50) parts.push('growing confidence');
-  else if (totalRatings > 0) parts.push('confidence needs improvement');
+    if (practicePct >= 80) parts.push('strong study completion');
+    else if (practicePct >= 40) parts.push('moderate study progress');
+    else parts.push('most flashcards still unreviewed');
+  }
+
+  if (coveragePct < 70) {
+    parts.push(`content coverage needs work (${coveragePct}%)`);
+  }
 
   if (weakSpots.length > 0) {
     parts.push(`${weakSpots.length} weak spot${weakSpots.length > 1 ? 's' : ''} identified`);

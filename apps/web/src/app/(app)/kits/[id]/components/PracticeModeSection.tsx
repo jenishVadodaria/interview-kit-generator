@@ -149,7 +149,7 @@ export function PracticeModeSection({ kit }: Props) {
           </p>
           <button
             onClick={startSession}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-xl font-medium transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-xl font-medium transition-all cursor-pointer"
           >
             <Play className="w-4 h-4" />
             Start Session
@@ -256,7 +256,7 @@ export function PracticeModeSection({ kit }: Props) {
               <button
                 key={opt.value}
                 onClick={(e) => { e.stopPropagation(); handleRate(opt.value); }}
-                className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border transition-all hover:scale-105 active:scale-95 ${
+                className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                   rated?.confidence === opt.value
                     ? 'bg-indigo-600 border-indigo-500 text-white'
                     : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-indigo-500/50 hover:bg-slate-700'
@@ -274,20 +274,20 @@ export function PracticeModeSection({ kit }: Props) {
           <button
             onClick={() => { setCurrentIdx((i) => Math.max(0, i - 1)); setIsFlipped(false); }}
             disabled={currentIdx === 0}
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" /> Previous
           </button>
           <button
             onClick={() => setView('start')}
-            className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-xs text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
           >
             Quit session
           </button>
           <button
             onClick={() => { setCurrentIdx((i) => Math.min(flashcards.length - 1, i + 1)); setIsFlipped(false); }}
             disabled={currentIdx === flashcards.length - 1}
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             Skip <ChevronRight className="w-4 h-4" />
           </button>
@@ -322,14 +322,14 @@ export function PracticeModeSection({ kit }: Props) {
         <div className="flex gap-3">
           <button
             onClick={() => setView('start')}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-colors cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" /> Discard
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || ratings.length === 0}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isSubmitting ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>

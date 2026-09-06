@@ -42,7 +42,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {/* Portal-style overlay fixed to bottom-right */}
       <div
         aria-live="polite"
-        className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none"
+        className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none print:hidden"
         style={{ maxWidth: '380px', width: '100%' }}
       >
         {toasts.map((toast) => (

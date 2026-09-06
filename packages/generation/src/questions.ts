@@ -51,12 +51,17 @@ export async function generateQuestions(
   const systemPrompt = createSystemPrompt(category, briefSummary);
   
   const reqsText = requirements.map(r => `[ID: ${r.id}] ${r.kind} - ${r.priority} - ${r.text}`).join('\n');
-  let userPrompt = `Generate ${category} questions that evaluate the following requirements:\n\n${reqsText}`;
+  
+  // Inject randomness to ensure regeneration produces different results
+  const randomSeed = Math.random().toString(36).substring(7);
+  let userPrompt = `Generate ${category} questions that evaluate the following requirements:\n\n${reqsText}\n\nVariation seed: ${randomSeed}`;
   
   if (discussions && discussions.length > 0) {
     userPrompt += `\n\nAdditionally, here are some real interview discussions you can use for inspiration:\n`;
     userPrompt += discussions.map(d => `Title: ${d.title}\nContent: ${d.content}`).join('\n\n');
   }
+  
+  userPrompt += `\n\nIMPORTANT: Respond with JSON only. Do not include any other text.`;
 
   const result = await callLLM(systemPrompt, userPrompt, QuestionsExtractionSchema);
   return result.questions;

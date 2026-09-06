@@ -39,7 +39,7 @@ export function KitBuilderTabs({ kit, onUpdate }: Props) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 pb-4 pt-2 px-3 text-sm font-medium transition-all border-b-2 whitespace-nowrap ${
+                className={`flex items-center gap-2 pb-4 pt-2 px-3 text-sm font-medium transition-all border-b-2 whitespace-nowrap cursor-pointer ${
                   isActive
                     ? 'border-indigo-500 text-indigo-400'
                     : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
@@ -63,8 +63,8 @@ export function KitBuilderTabs({ kit, onUpdate }: Props) {
       <div className="mt-2 animate-in fade-in duration-300">
         {activeTab === 'brief' && <RoleBriefSection kit={kit} onUpdate={onUpdate} />}
         {activeTab === 'questions' && <QuestionsSection kit={kit} onUpdate={onUpdate} />}
-        {activeTab === 'flashcards' && <FlashcardsSection kit={kit} onUpdate={onUpdate} />}
-        {activeTab === 'schedule' && <ScheduleSection kit={kit} onUpdate={onUpdate} />}
+        {activeTab === 'flashcards' && <FlashcardsSection kit={kit} onUpdate={onUpdate} onNavigate={setActiveTab} />}
+        {activeTab === 'schedule' && <ScheduleSection kit={kit} onNavigate={setActiveTab} />}
         {activeTab === 'practice' && <PracticeModeSection kit={kit} />}
         {activeTab === 'readiness' && <ReadinessScoreSection kit={kit} onUpdate={onUpdate} />}
       </div>
