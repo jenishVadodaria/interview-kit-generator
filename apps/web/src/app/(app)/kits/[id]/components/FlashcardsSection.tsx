@@ -22,6 +22,11 @@ export function FlashcardsSection({ kit, onUpdate, onNavigate }: Props) {
     onUpdate({ ...kit, flashcards: newCards });
   };
 
+  const handleUpdate = (id: string, updates: Partial<Flashcard>) => {
+    const newCards = kit.flashcards.map(f => f.id === id ? { ...f, ...updates, _pinned: true } : f);
+    onUpdate({ ...kit, flashcards: newCards });
+  };
+
   const handleRegenerate = async () => {
     setIsRegenerating(true);
     try {
@@ -74,13 +79,14 @@ export function FlashcardsSection({ kit, onUpdate, onNavigate }: Props) {
         </div>
       </div>
 
-      <p className="text-sm text-slate-500">Click a card to flip it and reveal the answer.</p>
+      <p className="text-sm text-slate-500">Click a card to flip it, or click the text directly to edit it.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {kit.flashcards.map(card => (
           <FlashcardItem
             key={card.id}
             card={card}
+            onUpdate={handleUpdate}
             onDelete={() => handleDelete(card.id)}
           />
         ))}
@@ -89,8 +95,16 @@ export function FlashcardsSection({ kit, onUpdate, onNavigate }: Props) {
   );
 }
 
-function FlashcardItem({ card, onDelete }: { card: Flashcard, onDelete: () => void }) {
+function FlashcardItem({ card, onUpdate, onDelete }: { card: Flashcard, onUpdate: (id: string, updates: Partial<Flashcard>) => void, onDelete: () => void }) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [front, setFront] = useState(card.front);
+  const [back, setBack] = useState(card.back);
+
+  const handleBlur = () => {
+    if (front !== card.front || back !== card.back) {
+      onUpdate(card.id, { front, back });
+    }
+  };
 
   return (
     <div className="group relative">
@@ -120,9 +134,14 @@ function FlashcardItem({ card, onDelete }: { card: Flashcard, onDelete: () => vo
             className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl border border-slate-700 rounded-2xl hover:border-indigo-500/30 transition-colors"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400 mb-4">Front — Question</span>
-            <p className="text-base font-medium text-white text-center leading-relaxed">{card.front}</p>
-            <span className="text-[10px] text-slate-600 mt-4">Click to flip</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400 mb-4 shrink-0">Front — Question</span>
+            <textarea
+              value={front}
+              onChange={e => setFront(e.target.value)}
+              onBlur={handleBlur}
+              onClick={e => e.stopPropagation()}
+              className="w-full h-full text-base font-medium text-white text-center leading-relaxed bg-transparent outline-none resize-none"
+            />
           </div>
 
           {/* Back */}
@@ -130,8 +149,14 @@ function FlashcardItem({ card, onDelete }: { card: Flashcard, onDelete: () => vo
             className="absolute inset-0 flex flex-col items-start justify-start p-6 bg-slate-900/80 backdrop-blur-xl border border-emerald-500/30 rounded-2xl overflow-y-auto"
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-400 mb-3">Back — Answer</span>
-            <p className="text-sm text-slate-200 leading-relaxed">{card.back}</p>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-400 mb-3 shrink-0">Back — Answer</span>
+            <textarea
+              value={back}
+              onChange={e => setBack(e.target.value)}
+              onBlur={handleBlur}
+              onClick={e => e.stopPropagation()}
+              className="w-full h-full text-sm text-slate-200 leading-relaxed bg-transparent outline-none resize-none"
+            />
           </div>
         </div>
       </div>

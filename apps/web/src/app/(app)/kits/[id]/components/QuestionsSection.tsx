@@ -60,7 +60,7 @@ export function QuestionsSection({ kit, onUpdate }: Props) {
   };
 
   const handleQuestionUpdate = (id: string, updates: Partial<Question>) => {
-    const newQuestions = kit.questions.map(q => q.id === id ? { ...q, ...updates } : q);
+    const newQuestions = kit.questions.map(q => q.id === id ? { ...q, ...updates, _pinned: true } : q);
     onUpdate({ ...kit, questions: newQuestions });
   };
 
@@ -184,16 +184,26 @@ function SortableQuestionItem({ question, onUpdate, onDelete }: { question: Ques
 
       <div className="flex-1 space-y-3">
         <div>
-          <div className="w-full text-white font-medium p-2 -ml-2">
-            {text}
-          </div>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={handleBlur}
+            className="w-full text-white font-medium p-2 -ml-2 bg-transparent hover:bg-slate-800/50 focus:bg-slate-800/80 rounded outline-none resize-y"
+            rows={2}
+            placeholder="Question text..."
+          />
         </div>
         
-        <div className="flex items-baseline gap-2">
-          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider shrink-0">Hint</span>
-          <div className="text-sm text-slate-400 leading-relaxed">
-            {hint}
-          </div>
+        <div className="flex items-start gap-2">
+          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider shrink-0 mt-2">Hint</span>
+          <textarea
+            value={hint}
+            onChange={(e) => setHint(e.target.value)}
+            onBlur={handleBlur}
+            className="w-full text-sm text-slate-400 leading-relaxed bg-transparent hover:bg-slate-800/50 focus:bg-slate-800/80 rounded p-2 -ml-2 outline-none resize-y"
+            rows={2}
+            placeholder="Answer hint..."
+          />
         </div>
 
         <div className="flex items-center justify-between pt-2">
