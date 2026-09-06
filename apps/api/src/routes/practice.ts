@@ -28,7 +28,7 @@ practiceRouter.post('/sessions', async (req, res) => {
     }
 
     // Verify the user owns the kit
-    const kit = await kitRepo.getKitByIdAndUserId(parsed.data.kit_id, req.session.userId!);
+    const kit = await kitRepo.getKitByIdAndUserId(parsed.data.kit_id, req.userId!);
     if (!kit) {
       res.status(404).json({ error: 'Kit not found or unauthorized' });
       return;
@@ -50,7 +50,7 @@ practiceRouter.post('/sessions', async (req, res) => {
     const session = {
       id: crypto.randomUUID(),
       kit_id: parsed.data.kit_id,
-      user_id: req.session.userId!,
+      user_id: req.userId!,
       created_at: new Date().toISOString(),
       flashcard_ratings: parsed.data.flashcard_ratings,
     };
@@ -73,13 +73,13 @@ practiceRouter.get('/sessions', async (req, res) => {
     }
 
     // Verify user owns the kit
-    const kit = await kitRepo.getKitByIdAndUserId(kitId, req.session.userId!);
+    const kit = await kitRepo.getKitByIdAndUserId(kitId, req.userId!);
     if (!kit) {
       res.status(404).json({ error: 'Kit not found or unauthorized' });
       return;
     }
 
-    const sessions = await sessionRepo.getSessionsByKitId(kitId, req.session.userId!);
+    const sessions = await sessionRepo.getSessionsByKitId(kitId, req.userId!);
     res.json({ sessions });
   } catch (error) {
     console.error('Failed to list practice sessions:', error);
@@ -90,7 +90,7 @@ practiceRouter.get('/sessions', async (req, res) => {
 // Get a specific practice session by ID
 practiceRouter.get('/sessions/:id', async (req, res) => {
   try {
-    const session = await sessionRepo.getSessionById(req.params.id, req.session.userId!);
+    const session = await sessionRepo.getSessionById(req.params.id, req.userId!);
     if (!session) {
       res.status(404).json({ error: 'Practice session not found' });
       return;

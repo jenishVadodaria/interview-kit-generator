@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 export interface ApiError extends Error {
@@ -12,12 +12,14 @@ export function useApi() {
   const fetchApi = useCallback(async (endpoint: string, options: RequestInit = {}) => {
     const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${endpoint}`;
     
-    // Always include credentials for session-based auth
+    // Read JWT from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
     const config: RequestInit = {
       ...options,
-      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.headers || {}),
       },
     };
@@ -28,6 +30,7 @@ export function useApi() {
       // Handle 401 Unauthorized globally — but NOT for auth endpoints
       // (a 401 from /auth/login means bad credentials, not session expiry)
       if (response.status === 401 && !endpoint.startsWith('/auth')) {
+        localStorage.removeItem('auth_token');
         router.push('/login');
         throw new Error('Unauthorized');
       }

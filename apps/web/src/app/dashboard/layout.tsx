@@ -4,12 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { useApi } from '@/hooks/useApi';
 import { LayoutDashboard, PlusCircle, LogOut, FolderOpen, Loader2, Target } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, setUser } = useAuth();
-  const { fetchApi } = useApi();
+  const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -23,8 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      await fetchApi('/auth/logout', { method: 'POST' });
-      setUser(null);
+      await logout();
       router.push('/login');
     } catch (err) {
       console.error('Failed to logout', err);

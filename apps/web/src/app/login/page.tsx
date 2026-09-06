@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { fetchApi } = useApi();
-  const { checkAuth } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,11 +22,11 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await fetchApi('/auth/login', {
+      const data = await fetchApi('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
-      await checkAuth(); // Refresh global user state
+      login(data.token, data.user);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Failed to login');

@@ -1,6 +1,7 @@
 import { Router, type Request, type Response, type IRouter } from 'express';
 import { z } from 'zod';
 import { User } from '../models/user.js';
+import { requireAuth, signToken } from '../middleware/require-auth.js';
 
 export const authRouter: IRouter = Router();
 
@@ -24,8 +25,8 @@ authRouter.post('/register', async (req: Request, res: Response): Promise<void> 
     }
     const user = new User({ email, password });
     await user.save();
-    req.session.userId = String(user._id);
-    res.status(201).json({ id: user._id, email: user.email });
+    const token = signToken(String(user._id));
+    res.status(201).json({ token, user: { id: user._id, email: user.email } });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -44,31 +45,24 @@ authRouter.post('/login', async (req: Request, res: Response): Promise<void> => 
       res.status(401).json({ error: 'Invalid email or password' });
       return;
     }
-    req.session.userId = String(user._id);
-    res.json({ id: user._id, email: user.email });
+    const token = signToken(String(user._id));
+    res.json({ token, user: { id: user._id, email: user.email } });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-authRouter.post('/logout', (req: Request, res: Response): void => {
-  req.session.destroy(() => {
-    res.clearCookie('connect.sid');
-    res.json({ ok: true });
-  });
+authRouter.post('/logout', (_req: Request, res: Response): void => {
+  // JWT is stateless — client simply discards the token
+  res.json({ ok: true });
 });
 
-// Returns current session user — used by frontend on initial load
-authRouter.get('/me', async (req: Request, res: Response): Promise<void> => {
+// Returns current user from JWT — used by frontend on initial load
+authRouter.get('/me', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
-    if (!req.session.userId) {
-      res.status(401).json({ error: 'Not authenticated' });
-      return;
-    }
-    const user = await User.findById(req.session.userId).select('-password');
+    const user = await User.findById(req.userId).select('-password');
     if (!user) {
-      req.session.destroy(() => undefined);
-      res.status(401).json({ error: 'Session expired' });
+      res.status(401).json({ error: 'User not found' });
       return;
     }
     res.json({ id: user._id, email: user.email });

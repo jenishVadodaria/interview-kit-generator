@@ -25,7 +25,7 @@ const pendingGenerations = new Map<string, PendingGeneration>();
 
 kitRouter.get('/', async (req, res) => {
   try {
-    const kits = await repository.getKitsByUserId(req.session.userId!);
+    const kits = await repository.getKitsByUserId(req.userId!);
     res.json({ kits });
   } catch (error) {
     console.error('Failed to get kits:', error);
@@ -35,7 +35,7 @@ kitRouter.get('/', async (req, res) => {
 
 kitRouter.get('/:id', async (req, res) => {
   try {
-    const kit = await repository.getKitByIdAndUserId(req.params.id, req.session.userId!);
+    const kit = await repository.getKitByIdAndUserId(req.params.id, req.userId!);
     if (!kit) {
       res.status(404).json({ error: 'Kit not found' });
       return;
@@ -49,7 +49,7 @@ kitRouter.get('/:id', async (req, res) => {
 
 kitRouter.delete('/:id', async (req, res) => {
   try {
-    const deleted = await repository.deleteKit(req.params.id, req.session.userId!);
+    const deleted = await repository.deleteKit(req.params.id, req.userId!);
     if (!deleted) {
       res.status(404).json({ error: 'Kit not found' });
       return;
@@ -66,14 +66,14 @@ kitRouter.put('/:id', async (req, res) => {
     // Assuming the body contains the entire updated kit
     const updatedKit = req.body;
     // Security check: ensure user owns the kit before updating
-    const existingKit = await repository.getKitByIdAndUserId(req.params.id, req.session.userId!);
+    const existingKit = await repository.getKitByIdAndUserId(req.params.id, req.userId!);
     if (!existingKit) {
       res.status(404).json({ error: 'Kit not found' });
       return;
     }
     
     // In a real app we'd validate the incoming kit against KitSchema
-    await repository.updateKit(req.params.id, req.session.userId!, updatedKit);
+    await repository.updateKit(req.params.id, req.userId!, updatedKit);
     res.json({ success: true, kit: updatedKit });
   } catch (error) {
     console.error('Failed to update kit:', error);
@@ -101,7 +101,7 @@ kitRouter.post('/generate', async (req, res) => {
       jd: parsed.data.jd,
       companyUrl: parsed.data.companyUrl,
       days: parsed.data.days,
-      userId: req.session.userId!
+      userId: req.userId!
     });
     
     res.json({ kitId });
@@ -128,7 +128,7 @@ kitRouter.get('/:id/progress', async (req, res) => {
   }
 
   // Ensure user owns this generation session
-  if (pending.userId !== req.session.userId) {
+  if (pending.userId !== req.userId) {
     res.write(`data: ${JSON.stringify({ step: 'complete', status: 'failed', message: 'Unauthorized' })}\n\n`);
     res.end();
     return;
@@ -179,7 +179,7 @@ kitRouter.post('/:id/regenerate/:section', async (req, res) => {
       return;
     }
 
-    const kit = await repository.getKitByIdAndUserId(id, req.session.userId!);
+    const kit = await repository.getKitByIdAndUserId(id, req.userId!);
     if (!kit) {
       res.status(404).json({ error: 'Kit not found' });
       return;
@@ -220,7 +220,7 @@ kitRouter.post('/:id/regenerate/:section', async (req, res) => {
       // Rebuild schedule with new questions
       const newSchedule = buildSchedule(kit.requirements, reIdedQuestions, kit.flashcards, kit.days_available);
 
-      await repository.updateKit(id, req.session.userId!, {
+      await repository.updateKit(id, req.userId!, {
         questions: reIdedQuestions,
         schedule: newSchedule,
       });
@@ -253,7 +253,7 @@ kitRouter.post('/:id/regenerate/:section', async (req, res) => {
       // Rebuild schedule with new flashcards
       const newSchedule = buildSchedule(kit.requirements, kit.questions, reIdedFlashcards, kit.days_available);
 
-      await repository.updateKit(id, req.session.userId!, {
+      await repository.updateKit(id, req.userId!, {
         flashcards: reIdedFlashcards,
         schedule: newSchedule,
       });
@@ -270,17 +270,17 @@ kitRouter.post('/:id/regenerate/:section', async (req, res) => {
 // Computes and stores the interview readiness score for a kit.
 kitRouter.get('/:id/readiness', async (req, res) => {
   try {
-    const kit = await repository.getKitByIdAndUserId(req.params.id, req.session.userId!);
+    const kit = await repository.getKitByIdAndUserId(req.params.id, req.userId!);
     if (!kit) {
       res.status(404).json({ error: 'Kit not found' });
       return;
     }
 
-    const sessions = await practiceRepo.getSessionsByKitId(req.params.id, req.session.userId!);
+    const sessions = await practiceRepo.getSessionsByKitId(req.params.id, req.userId!);
     const score = computeReadinessScore(kit, sessions);
 
     // Persist the computed score on the kit
-    await repository.updateKit(req.params.id, req.session.userId!, {
+    await repository.updateKit(req.params.id, req.userId!, {
       readiness_score: score,
     });
 
@@ -295,13 +295,13 @@ kitRouter.get('/:id/readiness', async (req, res) => {
 // Returns structured data for a printable/copyable interview prep summary.
 kitRouter.get('/:id/export', async (req, res) => {
   try {
-    const kit = await repository.getKitByIdAndUserId(req.params.id, req.session.userId!);
+    const kit = await repository.getKitByIdAndUserId(req.params.id, req.userId!);
     if (!kit) {
       res.status(404).json({ error: 'Kit not found' });
       return;
     }
 
-    const sessions = await practiceRepo.getSessionsByKitId(req.params.id, req.session.userId!);
+    const sessions = await practiceRepo.getSessionsByKitId(req.params.id, req.userId!);
     const score = computeReadinessScore(kit, sessions);
 
     // Top 5 hardest questions

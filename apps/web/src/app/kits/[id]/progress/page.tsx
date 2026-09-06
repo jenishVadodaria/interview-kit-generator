@@ -29,10 +29,10 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/kits/${id}/progress`;
+    const token = localStorage.getItem('auth_token');
+    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/kits/${id}/progress${token ? `?token=${token}` : ''}`;
     
-    // We must pass withCredentials to send the express-session cookie
-    const eventSource = new EventSource(url, { withCredentials: true });
+    const eventSource = new EventSource(url);
 
     eventSource.onmessage = (e) => {
       try {
