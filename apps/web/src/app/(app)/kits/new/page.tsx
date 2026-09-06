@@ -37,7 +37,7 @@ export default function NewKitPage() {
         method: 'POST',
         body: JSON.stringify({ jd, companyUrl, days: parsedDays }),
       });
-      router.push(`/kits/${data.kitId}`);
+      router.push(`/kits/${data.kitId}/progress`);
     } catch (err: any) {
       setError(err.message || 'Failed to start generation');
       setIsLoading(false);
